@@ -1,0 +1,3 @@
+sprite_pet
+galbae_pet
+coca_cola
