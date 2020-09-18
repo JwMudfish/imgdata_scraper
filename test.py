@@ -92,12 +92,6 @@ def make_folder(label_dir):
     if not os.path.exists(save_dir +'/' + label_dir):
         os.makedirs(save_dir +'/' + label_dir)
 
-
-
-
-
-
-
 #####################################################################################
 
 #LABELS = get_labels('./label.txt')
@@ -146,12 +140,12 @@ while True:
     #frame = imutils.rotate(frame, 90) 
 
     if MODE =='b':
-        #x = 400
+        x = 400
         for i, j in zip(box, LABELS):
             cv2.rectangle(frame, (i[0],i[1]), (i[2], i[3]), (0,0,255), 2)
-            cv2.putText(frame, j, (i[0], i[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
-            #cv2.putText(frame, '{} ||'.format(j), (x, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 3)
-            #x = x + 500
+            #cv2.putText(frame, j, (i[0], i[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
+            cv2.putText(frame, '{} ||'.format(j), (x, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 3)
+            x = x + 500
 
         cv2.putText(frame, 'BOX : {}'.format(BOX_NUM), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
         
@@ -221,17 +215,7 @@ while True:
         image_name = './saved_images/box_{}.jpg'.format(today)
         cv2.imwrite(image_name, frame)
         os.system('python3 ./labelimg/labelImg.py {} ./labelimg/data/predefined_classes.txt ./boxes'.format(image_name))
-
-    elif ch == ord('p'):
-        image = frame
-        images = list(map(lambda b : image[b[1]+1:b[3]-1, b[0]+2:b[2]-1], box))
-        images = list(map(lambda i : cv2.resize(i, (224,224)), images))
-        for img in images:
-            cv2.imwrite('./p_image/p_image.jpg', img)  # 이미지 수 많아지면, 변경 해줘야함
-
-
-
-
+        
 
 cap.release()
 cv2.destroyAllWindows()
