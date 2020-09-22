@@ -155,7 +155,7 @@ while True:
             cv2.putText(frame, '{} /'.format(j), (textSize + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
             label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
             textSize = label_len + textSize
-            
+
         cv2.putText(frame, 'BOX : {}_{}'.format(BOX_NUM, box_name[int(BOX_NUM)]), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 3)
         
 
@@ -245,8 +245,7 @@ while True:
 
         grayF = cv2.cvtColor(f_image, cv2.COLOR_RGB2GRAY)
         grayF = cv2.GaussianBlur(grayF, (0,0), 1.0)
-        grayF = cv2.resize(grayF, (224,224))
-
+        grayF = cv2.resize(grayF, (224,224))0
         grayP = cv2.cvtColor(p_image, cv2.COLOR_BGR2GRAY)
         grayP = cv2.GaussianBlur(grayP, (0,0), 1.0)        
         grayP = cv2.resize(grayP, (224,224))
@@ -286,9 +285,7 @@ while True:
             # cv2.resizeWindow('Before Opened', 500,500)
             # cv2.namedWindow('After Closed', cv2.WINDOW_NORMAL)
             # cv2.resizeWindow('After Closed', 500,500)
-            
-            # cv2.imshow('Before Opened', p_image)
-            # cv2.imshow('After Closed', f_image)
+
 
         else:
             print('Fine')
