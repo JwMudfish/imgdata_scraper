@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
 '''
 coding by JW_Mudfish
-Version : 1.0 
-Last Updated 2020.09.09
+Version : 1.1 
+Last Updated 2020.09.22
 '''
 import pandas as pd
 import cv2
@@ -23,6 +23,16 @@ from PIL import Image, ImageFont, ImageDraw
 RESIZE = 224
 BRIGHTNESS = 30
 CAMERA_NUM = -1
+
+# 음료용
+frame_width = int(3840)
+frame_height = int(2160)
+
+# 상온용
+#frame_width = int(1980)
+#frame_height = int(1080)
+
+
 #####################################################################################
 
 
@@ -80,24 +90,45 @@ def get_labels(label_path):
 def crop_image(image, boxes, save_path, labels, resize=None):
         seed_image = image
         images = list(map(lambda b : image[b[1]+1:b[3]-1, b[0]+2:b[2]-1], boxes))
-        images = list(map(lambda i : cv2.resize(i, resize), images))
-        #if str(type(resize)) == "<class 'tuple'>":
-        #    images = list(map(lambda i : cv2.resize(i, resize), images))
-        #num = 0
+        # images = list(map(lambda i : cv2.resize(i, resize), images))  # resize는 AUG 단계에서 한꺼번에
+        num = 0
         
         for img, label in zip(images, labels):
-            #num = num + 1
-            cv2.imwrite('{}/{}/{}_{}.jpg'.format(save_path,label,today,label), img)
-            
+            num = num + 1
+            cv2.imwrite('{}/{}/{}_{}_{}.jpg'.format(save_path,label,today,label, num), img)
+            #cv2.imwrite('{}/{}/{}_{}.jpg'.format(save_path,label,today,label), img)
         return images
+
+def crop_random_image(image, boxes, save_path, labels, resize = None):
+    seed_image = image
+
+    images_1 = list(map(lambda b : image[b[1]:b[3], b[0]:b[2]], boxes))
+    images_2 = list(map(lambda b : image[b[1]+170:b[3], b[0]:b[2]], boxes))
+    images_3 = list(map(lambda b : image[b[1]:b[3], b[0]+50:b[2]], boxes))
+    images_4 = list(map(lambda b : image[b[1]+170:b[3], b[0]+50:b[2]], boxes))
+
+    image_list = [images_1, images_2, images_3, images_4]
+    num = 0
+
+    for images in image_list:
+        for img, label in zip(images, labels):
+            num = num + 1
+            cv2.imwrite('{}/{}/{}_{}_{}.jpg'.format(save_path,label,today,label, num), img)
+
+
 
 def make_folder(label_dir):
     if not os.path.exists(save_dir +'/' + label_dir):
         os.makedirs(save_dir +'/' + label_dir)
 
-
-
-
+def adjust_vision_result(vision_result):
+    result = vision_result.copy()
+    for i in range(len(vision_result)-3):
+        if vision_result[i] == 'pet':
+            if i > 0:
+                result[i-1] = 'pet'
+            result[i+1] = 'pet'
+    return result
 #####################################################################################
 
 #LABELS = get_labels('./label.txt')
@@ -121,8 +152,6 @@ cap = cv2.VideoCapture(CAMERA_NUM)
 if cap.isOpened() == False:
     print('카메라를 오픈 할 수 없습니다.')
 
-frame_width = int(3840)
-frame_height = int(2160)
 
 MJPG_CODEC = 1196444237.0 # MJPG
 
@@ -156,7 +185,7 @@ while True:
             label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
             textSize = label_len + textSize
 
-        cv2.putText(frame, 'BOX : {}_{}'.format(BOX_NUM, box_name[int(BOX_NUM)]), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 3)
+        cv2.putText(frame, 'BOX : {}_{}'.format(BOX_NUM, box_name[int(BOX_NUM)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
         
 
     cv2.imshow('Usb Cam', frame)
@@ -196,7 +225,6 @@ while True:
 	    cv2.imwrite('./saved_images/usbcam({}).jpg'.format(today),frame)
 	    print('./saved_images/usbcam({}).jpg saved'.format(today))
 
-
     # 박스 이미지 캡쳐 및 resize
     elif ch == ord('s'):
         image = frame
@@ -205,20 +233,30 @@ while True:
             make_folder(label)
 
 
-        crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+        #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+        crop_image(image, box, save_dir,  LABELS)
         print('{} : images cropped'.format(LABELS))
         
         cv2.imwrite('./saved_images/usbcam({}).jpg'.format(today),frame)
 	    #print('./saved_images/usbcam({}).jpg saved'.format(today))
 
 
+    elif ch == ord('d'):
+        image = frame
+        
+        for label in LABELS:
+            make_folder(label)
+
+        #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+        crop_random_image(image, box, save_dir,  LABELS)
+        print('{} : images cropped'.format(LABELS))
+    
+
     elif ch == ord('0'):
         image = frame
         image = image[box[0][1]+1:box[0][3]-1, box[0][0]+2:box[0][2]-1]
-        image = cv2.resize(image, (RESIZE,RESIZE))
+        #image = cv2.resize(image, (RESIZE,RESIZE))
         cv2.imwrite('{}/{}/{}_{}.jpg'.format(save_dir + '/',LABELS[0],today,LABELS[0]), image)
-
-    #cv2.imshow('Usb Cam', frame)
 
     elif ch == ord('f'):
         image_name = './saved_images/box_{}.jpg'.format(today)
@@ -245,7 +283,7 @@ while True:
 
         grayF = cv2.cvtColor(f_image, cv2.COLOR_RGB2GRAY)
         grayF = cv2.GaussianBlur(grayF, (0,0), 1.0)
-        grayF = cv2.resize(grayF, (224,224))0
+        grayF = cv2.resize(grayF, (224,224))
         grayP = cv2.cvtColor(p_image, cv2.COLOR_BGR2GRAY)
         grayP = cv2.GaussianBlur(grayP, (0,0), 1.0)        
         grayP = cv2.resize(grayP, (224,224))
@@ -278,14 +316,9 @@ while True:
         if score < 0.91:
             #cv2.rectangle(f_image, (0,0), (w,h), (0,0,255), 6)   # 6은 두께
             #print('There is Object on 1~3 column')
-            print('1~3 컬럼에 무엇인가가 있다!!!! 확인요망!!!!!!!!!!')
+            print('경보발령 경보발령 !!!@@~~! 1~3 컬럼에 무엇인가가 있다!!!! 확인해봐 !!!!!!!!!!')
 
             
-            # cv2.namedWindow('Before Opened', cv2.WINDOW_NORMAL)
-            # cv2.resizeWindow('Before Opened', 500,500)
-            # cv2.namedWindow('After Closed', cv2.WINDOW_NORMAL)
-            # cv2.resizeWindow('After Closed', 500,500)
-
 
         else:
             print('Fine')
@@ -293,3 +326,6 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+
+
