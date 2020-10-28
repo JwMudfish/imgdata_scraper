@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
 '''
 coding by JW_Mudfish
-Version : 1.1 
-Last Updated 2020.09.22
+Version : 1.2 
+Last Updated 2020.10.22
 '''
 import pandas as pd
 import cv2
@@ -15,7 +15,7 @@ from xml.dom import minidom
 import os
 from skimage.measure import compare_ssim
 from PIL import Image, ImageFont, ImageDraw
-
+import random
 
 #####################################################################################
 #LABELS = ['galbae_can','coca_can','sprite_can']
@@ -34,7 +34,6 @@ frame_height = int(2160)
 
 
 #####################################################################################
-
 
 
 def Rotate(src, degrees) :
@@ -103,19 +102,19 @@ def crop_random_image(image, boxes, save_path, labels, resize = None):
     seed_image = image
 
     images_1 = list(map(lambda b : image[b[1]:b[3], b[0]:b[2]], boxes))
-    images_2 = list(map(lambda b : image[b[1]+170:b[3], b[0]:b[2]], boxes))
-    images_3 = list(map(lambda b : image[b[1]:b[3], b[0]+50:b[2]], boxes))
-    images_4 = list(map(lambda b : image[b[1]+170:b[3], b[0]+50:b[2]], boxes))
+    images_2 = list(map(lambda b : image[b[1]+random.randint(100,170) : b[3], b[0] : b[2]], boxes))
+    images_3 = list(map(lambda b : image[b[1] : b[3], b[0]+random.randint(10,50) : b[2]], boxes))
+    images_4 = list(map(lambda b : image[b[1]+random.randint(100,170) : b[3], b[0]+random.randint(10,50) : b[2]], boxes))
 
     image_list = [images_1, images_2, images_3, images_4]
     num = 0
-
+    
     for images in image_list:
         for img, label in zip(images, labels):
             num = num + 1
             cv2.imwrite('{}/{}/{}_{}_{}.jpg'.format(save_path,label,today,label, num), img)
 
-
+    print('Random crop image 함수실행!!!')
 
 def make_folder(label_dir):
     if not os.path.exists(save_dir +'/' + label_dir):
@@ -231,7 +230,6 @@ while True:
         
         for label in LABELS:
             make_folder(label)
-
 
         #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
         crop_image(image, box, save_dir,  LABELS)
