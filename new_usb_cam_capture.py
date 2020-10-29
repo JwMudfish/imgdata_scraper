@@ -21,16 +21,16 @@ import random
 #LABELS = ['galbae_can','coca_can','sprite_can']
 
 RESIZE = 224
-BRIGHTNESS = 30
-CAMERA_NUM = -1
+BRIGHTNESS = 10
+CAMERA_NUM = 0
 
 # 음료용
-frame_width = int(3840)
-frame_height = int(2160)
+#frame_width = int(3840)
+#frame_height = int(2160)
 
 # 상온용
-#frame_width = int(1980)
-#frame_height = int(1080)
+frame_width = int(1980)
+frame_height = int(1080)
 
 
 #####################################################################################

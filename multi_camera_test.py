@@ -9,7 +9,8 @@ from xml.dom import minidom
 import os
 
 
-BOX_NUM = '0'   # 
+BOX_NUM_1 = '0'   # 
+BOX_NUM_2 = '0'
 MODE = 'b'   # b : box 모드
 
 def get_boxes(label_path):
@@ -42,14 +43,33 @@ def get_boxes(label_path):
     return boxes_1
 
 def get_labels(label_path):
-    with open('./label.txt', 'r') as file:
+    with open(f'{label_path}', 'r') as file:
         labels = file.readlines()
         labels = list(map(lambda x : x.strip(), labels))
 
     return labels
 
+def crop_random_image(image, boxes, save_path, labels, resize = None):
+    seed_image = image
+
+    images_1 = list(map(lambda b : image[b[1]:b[3], b[0]:b[2]], boxes))
+    images_2 = list(map(lambda b : image[b[1]+random.randint(100,170) : b[3], b[0] : b[2]], boxes))
+    images_3 = list(map(lambda b : image[b[1] : b[3], b[0]+random.randint(10,50) : b[2]], boxes))
+    images_4 = list(map(lambda b : image[b[1]+random.randint(100,170) : b[3], b[0]+random.randint(10,50) : b[2]], boxes))
+
+    image_list = [images_1, images_2, images_3, images_4]
+    num = 0
+    
+    for images in image_list:
+        for img, label in zip(images, labels):
+            num = num + 1
+            cv2.imwrite('{}/{}/{}_{}_{}.jpg'.format(save_path,label,today,label, num), img)
+
+    print('Random crop image 함수실행!!!')
+
+
 frame0 = cv2.VideoCapture(0)
-frame1 = cv2.VideoCapture(1)
+frame1 = cv2.VideoCapture(2)
 
 frame_width = int(1920)
 frame_height = int(1080)
@@ -78,47 +98,46 @@ while True:
     ret0, img0 = frame0.read()
     ret1, img00 = frame1.read()
     
-    box = get_boxes('./boxes')['{}'.format(BOX_NUM)]
+    box1 = get_boxes('./boxes')['{}'.format(BOX_NUM_1)]
+    box2 = get_boxes('./boxes')['{}'.format(BOX_NUM_2)]
+
     box_name = sorted(os.listdir('./boxes'))
-    LABELS = get_labels('./label.txt')
+    
+    LABELS_left = get_labels('./label_left.txt')
+    LABELS_right = get_labels('./label_right.txt')
 
-    # if MODE =='b':
-    #     for i, j in zip(box, LABELS):
-    #         cv2.rectangle(img0, (i[0],i[1]), (i[2], i[3]), (0,0,255), 2)
-    #         cv2.putText(img0, j, (i[0], i[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
-            
-    #         cv2.rectangle(img00, (i[0],i[1]), (i[2], i[3]), (0,0,255), 2)
-    #         cv2.putText(img00, j, (i[0], i[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
-        
-        
-        #cv2.putText(img0, 'BOX : {}'.format(BOX_NUM), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-
+    blank_image_1 = np.zeros((150, frame_width, 3), np.uint8)
+    blank_image_2 = np.zeros((150, frame_width, 3), np.uint8)
 
     if MODE =='b':
         textSize1 = textSize2 = -60
         
-        for i, j in zip(box, LABELS):
+        for i in box1:
             cv2.rectangle(img0, (i[0],i[1]), (i[2], i[3]), (0,0,255), 2)
-            #cv2.putText(frame, j, (i[0], i[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
-
-            cv2.putText(img0, '{} /'.format(j), (textSize1 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-            label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
-            textSize1 = label_len + textSize1
     
+        for i in box2:
             cv2.rectangle(img00, (i[0],i[1]), (i[2], i[3]), (0,0,255), 2)
-            #cv2.putText(frame, j, (i[0], i[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
 
-            cv2.putText(img00, '{} /'.format(j), (textSize2 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-            label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
-            textSize2 = label_len + textSize2
 
-        cv2.putText(img0, 'BOX : {}_{}'.format(BOX_NUM, box_name[int(BOX_NUM)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
-        cv2.putText(img00, 'BOX : {}_{}'.format(BOX_NUM, box_name[int(BOX_NUM)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
+    textSize1 = textSize2 = -60
+    for j in LABELS_left:
+        cv2.putText(blank_image_1, '{} /'.format(j), (textSize1 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
+        textSize1 = label_len + textSize1
 
+    for j in LABELS_right:
+        cv2.putText(blank_image_2, '{} /'.format(j), (textSize2 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
+        textSize2 = label_len + textSize2
+
+    cv2.putText(blank_image_1, 'BOX : {}_{}'.format(BOX_NUM_1, box_name[int(BOX_NUM_1)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
+    cv2.putText(blank_image_2, 'BOX : {}_{}'.format(BOX_NUM_2, box_name[int(BOX_NUM_2)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
 
     img1 = cv2.resize(img0,(1920,1080))
     img2 = cv2.resize(img00,(1920,1080))
 
+    img1 = cv2.vconcat([blank_image_1, img1])
+    img2 = cv2.vconcat([blank_image_2, img2])
 
     rst = cv2.hconcat([img1, img2])
     cv2.imshow('Usb Cam', rst)
@@ -135,6 +154,32 @@ while True:
             MODE = 'a'
         else:
             MODE = 'b'
+
+
+    # box 변경 ( '[' : - 변경,   ']' : + 변경)
+    elif ch == ord('o'):
+        BOX_NUM_1 = str(int(BOX_NUM_1) + 1)
+    
+        if BOX_NUM_1 == str(len(os.listdir('./boxes'))):
+            BOX_NUM_1 = '0'
+
+    elif ch == ord('p'):
+        BOX_NUM_1 = str(int(BOX_NUM_1) - 1)
+    
+        if BOX_NUM_1 == '-1':
+            BOX_NUM_1 = str(len(os.listdir('./boxes'))-1)
+
+    elif ch == ord('['):
+        BOX_NUM_2 = str(int(BOX_NUM_2) + 1)
+    
+        if BOX_NUM_2 == str(len(os.listdir('./boxes'))):
+            BOX_NUM_2 = '0'
+
+    elif ch == ord(']'):
+        BOX_NUM_2 = str(int(BOX_NUM_2) - 1)
+    
+        if BOX_NUM_2 == '-1':
+            BOX_NUM_2 = str(len(os.listdir('./boxes'))-1)
 
 
 frame0.release()
