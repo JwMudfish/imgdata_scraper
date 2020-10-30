@@ -1,4 +1,7 @@
-f_img_1
-f_img_2
-f_img_
-f_ff
+left_1
+left_2
+left_3
+left_4
+right_1
+right_2
+right_3

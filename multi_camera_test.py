@@ -7,11 +7,19 @@ import time
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import os
+import random
 
+###############################
+BRIGHTNESS = 10
+save_dir = './cls_seed_images'
+LEFT_CAMERA_NUM = 0
+RIGHT_CAMERA_NUM = 2
 
+################################
+
+MODE = 'b'   # b : box 모드
 BOX_NUM_1 = '0'   # 
 BOX_NUM_2 = '0'
-MODE = 'b'   # b : box 모드
 
 def get_boxes(label_path):
     label_path = label_path
@@ -42,12 +50,26 @@ def get_boxes(label_path):
     
     return boxes_1
 
+def make_folder(label_dir):
+    if not os.path.exists(save_dir +'/' + label_dir):
+        os.makedirs(save_dir +'/' + label_dir)
+
 def get_labels(label_path):
     with open(f'{label_path}', 'r') as file:
         labels = file.readlines()
         labels = list(map(lambda x : x.strip(), labels))
 
     return labels
+
+def get_multi_labels(label_path):
+    with open(f'{label_path}', 'r') as file:
+        labels = file.readlines()
+        labels = list(map(lambda x : x.strip(), labels))
+    
+    left = labels[:int(np.ceil(len(labels) / 2))]
+    right = labels[int(np.ceil(len(labels) / 2)) :]
+    return left, right
+
 
 def crop_random_image(image, boxes, save_path, labels, resize = None):
     seed_image = image
@@ -68,17 +90,17 @@ def crop_random_image(image, boxes, save_path, labels, resize = None):
     print('Random crop image 함수실행!!!')
 
 
-frame0 = cv2.VideoCapture(0)
-frame1 = cv2.VideoCapture(2)
+frame0 = cv2.VideoCapture(LEFT_CAMERA_NUM)
+frame1 = cv2.VideoCapture(RIGHT_CAMERA_NUM)
 
 frame_width = int(1920)
 frame_height = int(1080)
 
 MJPG_CODEC = 1196444237.0 # MJPG
-BRIGHTNESS = 10
 
-cv2.namedWindow('Usb Cam', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('Usb Cam', frame_width,frame_height)
+
+cv2.namedWindow('Interminds Train Image Collection Program by JW', cv2.WINDOW_NORMAL)
+cv2.resizeWindow('Interminds Train Image Collection Program by JW', frame_width,frame_height)
 
 frame0.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS)
 frame0.set(cv2.CAP_PROP_FOURCC, MJPG_CODEC)
@@ -95,6 +117,9 @@ frame1.set(cv2.CAP_PROP_AUTOFOCUS, 0)
 
 while True:
 
+    frame0.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS)
+    frame1.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS)
+
     ret0, img0 = frame0.read()
     ret1, img00 = frame1.read()
     
@@ -103,8 +128,14 @@ while True:
 
     box_name = sorted(os.listdir('./boxes'))
     
-    LABELS_left = get_labels('./label_left.txt')
-    LABELS_right = get_labels('./label_right.txt')
+    # 라벨 커스터마이징 할 때 사용
+    # LABELS_left = get_labels('./label_left.txt')
+    # LABELS_right = get_labels('./label_right.txt')
+
+    # 음료 및 상온 2221 구조에서 사용
+    LABELS_left = get_multi_labels('./label.txt')[0]
+    LABELS_right = get_multi_labels('./label.txt')[1]
+
 
     blank_image_1 = np.zeros((150, frame_width, 3), np.uint8)
     blank_image_2 = np.zeros((150, frame_width, 3), np.uint8)
@@ -136,11 +167,13 @@ while True:
     img1 = cv2.resize(img0,(1920,1080))
     img2 = cv2.resize(img00,(1920,1080))
 
-    img1 = cv2.vconcat([blank_image_1, img1])
-    img2 = cv2.vconcat([blank_image_2, img2])
+    concated_img1 = cv2.vconcat([blank_image_1, img1])
+    concated_img2 = cv2.vconcat([blank_image_2, img2])
 
-    rst = cv2.hconcat([img1, img2])
-    cv2.imshow('Usb Cam', rst)
+    rst = cv2.hconcat([concated_img1, concated_img2])
+    
+    cv2.imshow('Interminds Train Image Collection Program by JW', rst)
+    today = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
    
     ch = cv2.waitKey(1)
 
@@ -181,6 +214,59 @@ while True:
         if BOX_NUM_2 == '-1':
             BOX_NUM_2 = str(len(os.listdir('./boxes'))-1)
 
+    elif ch == ord('1'):
+        if MODE == 'a':
+            image = img1
+            
+            for label in LABELS_left:
+                make_folder(label)
+
+            #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+            crop_random_image(image, box1, save_dir,  LABELS_left)
+            print('{} : left section cropped'.format(LABELS_left))
+        else:
+            print('a 키를 눌러 박스를 제거하고 촬영')        
+
+    elif ch == ord('2'):
+        if MODE == 'a':
+            image = img2
+            
+            for label in LABELS_right:
+                make_folder(label)
+
+            #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+            crop_random_image(image, box2, save_dir,  LABELS_right)
+            print('{} : right section cropped'.format(LABELS_right))
+        else:
+            print('a 키를 눌러 박스를 제거하고 촬영')
+
+
+    elif ch == ord('d'):
+        if MODE == 'a':
+            image1 = img1
+            image2 = img2
+            
+            for label in LABELS_right:
+                make_folder(label)
+            for label in LABELS_left:
+                make_folder(label)        
+
+            #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+            crop_random_image(image1, box1, save_dir,  LABELS_left)
+            crop_random_image(image2, box2, save_dir,  LABELS_right)
+            print('{} // {} : left, right section cropped'.format(LABELS_left, LABELS_right))
+        else:
+            print('a 키를 눌러 박스를 제거하고 촬영')
+
+
+
+    elif ch == ord('+'):
+        BRIGHTNESS = BRIGHTNESS + 1
+        print(BRIGHTNESS)
+    
+    elif ch == ord('-'):
+        BRIGHTNESS = BRIGHTNESS -1
+        print(BRIGHTNESS)
 
 frame0.release()
 frame1.release()
