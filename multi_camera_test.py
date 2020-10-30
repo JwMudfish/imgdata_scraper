@@ -89,6 +89,16 @@ def crop_random_image(image, boxes, save_path, labels, resize = None):
 
     print('Random crop image 함수실행!!!')
 
+def file_count(save_path):
+    dir_count = os.listdir(save_path)
+    
+    result = []
+    for i in dir_count:
+        folder_name = i
+        files = len(os.listdir(f'{save_path}/{i}'))
+        result.append([folder_name, files])
+    return result
+
 
 frame0 = cv2.VideoCapture(LEFT_CAMERA_NUM)
 frame1 = cv2.VideoCapture(RIGHT_CAMERA_NUM)
@@ -161,6 +171,7 @@ while True:
         label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
         textSize2 = label_len + textSize2
 
+
     cv2.putText(blank_image_1, 'BOX : {}_{}'.format(BOX_NUM_1, box_name[int(BOX_NUM_1)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
     cv2.putText(blank_image_2, 'BOX : {}_{}'.format(BOX_NUM_2, box_name[int(BOX_NUM_2)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
 
@@ -171,10 +182,20 @@ while True:
     concated_img2 = cv2.vconcat([blank_image_2, img2])
     
     rst = cv2.hconcat([concated_img1, concated_img2])
-    blank_image_down = np.zeros((150, rst.shape[1], 3), np.uint8)
+    blank_image_down = np.zeros((250, rst.shape[1], 3), np.uint8)
+
+    w = 100
+    for i in file_count(save_dir):
+        cv2.putText(blank_image_down, f'{i[0]} : {i[1]} ||', (w, 100), cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255), 1)    
+        w = w + 250
+
+
     cv2.putText(blank_image_down, 'Brightness : {}'.format(BRIGHTNESS), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 2)
 
     rst = cv2.vconcat([rst, blank_image_down])
+
+
+    
 
     cv2.imshow('Interminds Train Image Collection Program by JW', rst)
     today = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
