@@ -169,9 +169,13 @@ while True:
 
     concated_img1 = cv2.vconcat([blank_image_1, img1])
     concated_img2 = cv2.vconcat([blank_image_2, img2])
-
-    rst = cv2.hconcat([concated_img1, concated_img2])
     
+    rst = cv2.hconcat([concated_img1, concated_img2])
+    blank_image_down = np.zeros((150, rst.shape[1], 3), np.uint8)
+    cv2.putText(blank_image_down, 'Brightness : {}'.format(BRIGHTNESS), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 2)
+
+    rst = cv2.vconcat([rst, blank_image_down])
+
     cv2.imshow('Interminds Train Image Collection Program by JW', rst)
     today = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
    
@@ -258,14 +262,12 @@ while True:
         else:
             print('a 키를 눌러 박스를 제거하고 촬영')
 
-
-
     elif ch == ord('+'):
-        BRIGHTNESS = BRIGHTNESS + 1
+        BRIGHTNESS = BRIGHTNESS + 2
         print(BRIGHTNESS)
     
     elif ch == ord('-'):
-        BRIGHTNESS = BRIGHTNESS -1
+        BRIGHTNESS = BRIGHTNESS -2
         print(BRIGHTNESS)
 
 frame0.release()
