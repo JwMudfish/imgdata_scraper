@@ -9,11 +9,15 @@ from xml.dom import minidom
 import os
 import random
 
+# sudo apt install v4l-utils
 ###############################
 BRIGHTNESS = 10
 save_dir = './cls_seed_images'
 LEFT_CAMERA_NUM = 0
 RIGHT_CAMERA_NUM = 2
+
+frame_width = int(1920)
+frame_height = int(1080)
 
 ################################
 
@@ -99,12 +103,28 @@ def file_count(save_path):
         result.append([folder_name, files])
     return result
 
+def getDevicesList():
+    devices_list = []
+
+    result = os.popen('v4l2-ctl --list-devices').read()
+    result_lists = result.split("\n\n")
+    for result_list in result_lists:
+        if result_list != '':
+            result_list_2 = result_list.split('\n\t')
+            devices_list.append(result_list_2[1])
+    return devices_list
+
+def nothing(x):
+    pass
+
+
+active_cam = list(map(lambda x : x[-1], getDevicesList()))
+
+print(f'현재 활성화 되어있는 카메라는 {active_cam} 입니다.')
 
 frame0 = cv2.VideoCapture(LEFT_CAMERA_NUM)
 frame1 = cv2.VideoCapture(RIGHT_CAMERA_NUM)
 
-frame_width = int(1920)
-frame_height = int(1080)
 
 MJPG_CODEC = 1196444237.0 # MJPG
 
@@ -123,6 +143,9 @@ frame1.set(cv2.CAP_PROP_FOURCC, MJPG_CODEC)
 frame1.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
 frame1.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 frame1.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+
+cv2.createTrackbar('Brightness','Interminds Train Image Collection Program by JW', 100, 200, nothing)
+
 
 
 while True:
@@ -171,7 +194,7 @@ while True:
         label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
         textSize2 = label_len + textSize2
 
-
+    # 박스name 표시
     cv2.putText(blank_image_1, 'BOX : {}_{}'.format(BOX_NUM_1, box_name[int(BOX_NUM_1)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3, cv2.LINE_AA)
     cv2.putText(blank_image_2, 'BOX : {}_{}'.format(BOX_NUM_2, box_name[int(BOX_NUM_2)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3, cv2.LINE_AA)
 
@@ -194,6 +217,7 @@ while True:
 
     rst = cv2.vconcat([rst, blank_image_down])
 
+    BRIGHTNESS = cv2.getTrackbarPos('Brightness', 'Interminds Train Image Collection Program by JW') - 100
 
     cv2.imshow('Interminds Train Image Collection Program by JW', rst)
     today = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
@@ -282,13 +306,34 @@ while True:
         else:
             print('a 키를 눌러 박스를 제거하고 촬영')
 
-    elif ch == ord('+'):
-        BRIGHTNESS = BRIGHTNESS + 2
-        print(BRIGHTNESS)
+    # 트랙바로 대체
+    # elif ch == ord('+'):
+    #     BRIGHTNESS = BRIGHTNESS + 2
+    #     print(BRIGHTNESS)
     
-    elif ch == ord('-'):
-        BRIGHTNESS = BRIGHTNESS -2
-        print(BRIGHTNESS)
+    # elif ch == ord('-'):
+    #     BRIGHTNESS = BRIGHTNESS -2
+    #     print(BRIGHTNESS)
+
+    elif ch == ord('f'):
+        if MODE == 'a':
+            image_name = './saved_images/left_box_{}.jpg'.format(today)
+            cv2.imwrite(image_name, img1)
+            os.system('python3 ./labelimg/labelImg.py {} ./labelimg/data/predefined_classes.txt ./boxes'.format(image_name))
+
+        else:
+            print('a 키를 눌러 박스를 제거하고 촬영')
+
+    elif ch == ord('g'):
+        if MODE == 'a':
+            image_name = './saved_images/right_box_{}.jpg'.format(today)
+            cv2.imwrite(image_name, img2)
+            os.system('python3 ./labelimg/labelImg.py {} ./labelimg/data/predefined_classes.txt ./boxes'.format(image_name))
+
+        else:
+            print('a 키를 눌러 박스를 제거하고 촬영')
+
+
 
 frame0.release()
 frame1.release()
