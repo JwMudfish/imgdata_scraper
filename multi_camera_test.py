@@ -151,7 +151,7 @@ while True:
     blank_image_2 = np.zeros((150, frame_width, 3), np.uint8)
 
     if MODE =='b':
-        textSize1 = textSize2 = -60
+        #textSize1 = textSize2 = -60
         
         for i in box1:
             cv2.rectangle(img0, (i[0],i[1]), (i[2], i[3]), (0,0,255), 2)
@@ -162,18 +162,18 @@ while True:
 
     textSize1 = textSize2 = -60
     for j in LABELS_left:
-        cv2.putText(blank_image_1, '{} /'.format(j), (textSize1 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        cv2.putText(blank_image_1, '{} /'.format(j), (textSize1 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
         label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
         textSize1 = label_len + textSize1
 
     for j in LABELS_right:
-        cv2.putText(blank_image_2, '{} /'.format(j), (textSize2 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        cv2.putText(blank_image_2, '{} /'.format(j), (textSize2 + 70, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
         label_len = cv2.getTextSize(text=str(j+'//'), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
         textSize2 = label_len + textSize2
 
 
-    cv2.putText(blank_image_1, 'BOX : {}_{}'.format(BOX_NUM_1, box_name[int(BOX_NUM_1)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
-    cv2.putText(blank_image_2, 'BOX : {}_{}'.format(BOX_NUM_2, box_name[int(BOX_NUM_2)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3)
+    cv2.putText(blank_image_1, 'BOX : {}_{}'.format(BOX_NUM_1, box_name[int(BOX_NUM_1)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3, cv2.LINE_AA)
+    cv2.putText(blank_image_2, 'BOX : {}_{}'.format(BOX_NUM_2, box_name[int(BOX_NUM_2)]), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 3, cv2.LINE_AA)
 
     img1 = cv2.resize(img0,(1920,1080))
     img2 = cv2.resize(img00,(1920,1080))
@@ -186,22 +186,21 @@ while True:
 
     w = 100
     for i in file_count(save_dir):
-        cv2.putText(blank_image_down, f'{i[0]} : {i[1]} ||', (w, 100), cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255), 1)    
+        cv2.putText(blank_image_down, f'{i[0]} : {i[1]} ||', (w, 100), cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255), 2, cv2.LINE_AA)    
         w = w + 250
 
 
-    cv2.putText(blank_image_down, 'Brightness : {}'.format(BRIGHTNESS), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 2)
+    cv2.putText(blank_image_down, 'Brightness : {}'.format(BRIGHTNESS), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 2, cv2.LINE_AA)
 
     rst = cv2.vconcat([rst, blank_image_down])
 
-
-    
 
     cv2.imshow('Interminds Train Image Collection Program by JW', rst)
     today = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
    
     ch = cv2.waitKey(1)
 
+######################################################################################################################
     # 종료
     if ch == ord('q'):
 	    break
