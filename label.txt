@@ -1,7 +1,7 @@
-left_1
-left_2
-left_3
-left_4
-right_1
-right_2
-right_3
+coca_pet_2324
+coca_pet_2324
+coca_pet_2325
+coca_pet_2325
+sprite_can_ff_1232
+sprite_can_ff_1232
+sprite_can_ff_1233
