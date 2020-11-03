@@ -1,3 +1,10 @@
+#-*- coding: utf-8 -*-
+'''
+coding by JW_Mudfish
+Version : 2.1 
+Last Updated 2020.11.03
+'''
+
 import pandas as pd
 import cv2
 import numpy as np
@@ -111,14 +118,16 @@ def getDevicesList():
     for result_list in result_lists:
         if result_list != '':
             result_list_2 = result_list.split('\n\t')
-            devices_list.append(result_list_2[1])
+            devices_list.append(result_list_2[1][-1])
     return devices_list
 
 def nothing(x):
     pass
 
 
-active_cam = list(map(lambda x : x[-1], getDevicesList()))
+#active_cam = list(map(lambda x : x[-1], getDevicesList()))
+active_cam = getDevicesList()
+
 
 print(f'현재 활성화 되어있는 카메라는 {active_cam} 입니다.')
 
