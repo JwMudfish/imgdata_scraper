@@ -1,31 +1,20 @@
+import pandas as pd
 import os
-import glob
-import re
 
-li = os.listdir('/dev/')
+def file_count(save_path):
+    dir_name = os.listdir(save_path)
+    
+    result = []
+    for name in dir_name:
+        files = len(os.listdir(f'{save_path}/{name}'))
+        result.append([name, files])
+    
+    df = pd.DataFrame(result, columns = ['label', 'cnt'])
+    return df
 
-#print([i[:5] == 'video' for i in li])
+#print(file_count('./cls_seed_images'))
 
-# rst = []
-# for i in li:
-#     if i[:5] == 'video':
-#         rst.append(i)
-
-# print(rst)
-
-
-def getDevicesList():
-    devices_list = []
-
-    result = os.popen('v4l2-ctl --list-devices').read()
-    result_lists = result.split("\n\n")
-    for result_list in result_lists:
-        if result_list != '':
-            result_list_2 = result_list.split('\n\t')
-            devices_list.append(result_list_2[1])
-    return devices_list
-
-b = list(map(lambda x : x[-1], getDevicesList()))
-
-print(f'현재 활성화 되어있는 카메라는 {b} 입니다.')
-
+save_path = './cls_seed_images'
+a = [[name, len(os.listdir(f'{save_path}/{name}'))] for name in os.listdir(save_path)]
+df = pd.DataFrame(a, columns = ['label', 'cnt'])
+print(df)

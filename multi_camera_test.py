@@ -216,11 +216,20 @@ while True:
     rst = cv2.hconcat([concated_img1, concated_img2])
     blank_image_down = np.zeros((250, rst.shape[1], 3), np.uint8)
 
-    w = 100
+    folder_text_size = -60
+    h = 100
     for i in file_count(save_dir):
-        cv2.putText(blank_image_down, f'{i[0]} : {i[1]} ||', (w, 100), cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255), 2, cv2.LINE_AA)    
-        w = w + 250
+        #cv2.putText(blank_image_down, f'{i[0]} : {i[1]} /', (folder_text_size + 70, h), cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255), 1, cv2.LINE_AA)    
+        #folder_len = cv2.getTextSize(text=str(f'{i[0]} : {i[1]} / '), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
+        
+        if folder_text_size < rst.shape[1]:
+            cv2.putText(blank_image_down, f'{i[0]} : {i[1]} /', (folder_text_size + 70, h), cv2.FONT_HERSHEY_DUPLEX, 1, (255,255,255), 1, cv2.LINE_AA)    
+            folder_len = cv2.getTextSize(text=str(f'{i[0]} : {i[1]} / '), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, thickness=2)[0][0]
 
+            folder_text_size = folder_len + folder_text_size
+        else:
+            h = h + 50
+            folder_text_size = -60
 
     cv2.putText(blank_image_down, 'Brightness : {}'.format(BRIGHTNESS), (10, 50), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0,255,0), 2, cv2.LINE_AA)
 
