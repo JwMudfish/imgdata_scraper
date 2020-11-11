@@ -82,7 +82,7 @@ def get_multi_labels(label_path):
     return left, right
 
 
-def crop_random_image(image, boxes, save_path, labels, resize = None):
+def crop_random_image(image, boxes, save_path, labels, left_right, resize = None):
     seed_image = image
 
     images_1 = list(map(lambda b : image[b[1]:b[3], b[0]:b[2]], boxes))
@@ -96,12 +96,12 @@ def crop_random_image(image, boxes, save_path, labels, resize = None):
     for images in image_list:
         for img, label in zip(images, labels):
             num = num + 1
-            cv2.imwrite('{}/{}/{}_{}_{}.jpg'.format(save_path,label,today,label, num), img)
+            cv2.imwrite('{}/{}/{}_{}_{}_{}.jpg'.format(save_path,label,today,label,left_right, num), img)
 
     print('Random crop image 함수실행!!!')
 
 def file_count(save_path):
-    dir_count = os.listdir(save_path)
+    dir_count = sorted(os.listdir(save_path))
     
     result = []
     for i in dir_count:
@@ -214,7 +214,7 @@ while True:
     concated_img2 = cv2.vconcat([blank_image_2, img2])
     
     rst = cv2.hconcat([concated_img1, concated_img2])
-    blank_image_down = np.zeros((250, rst.shape[1], 3), np.uint8)
+    blank_image_down = np.zeros((505, rst.shape[1], 3), np.uint8)
 
     folder_text_size = -60
     h = 100
@@ -286,7 +286,7 @@ while True:
                 make_folder(label)
 
             #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
-            crop_random_image(image, box1, save_dir,  LABELS_left)
+            crop_random_image(image, box1, save_dir,  LABELS_left, left_right='left')
             print('{} : left section cropped'.format(LABELS_left))
         else:
             print('a 키를 눌러 박스를 제거하고 촬영')        
@@ -299,7 +299,7 @@ while True:
                 make_folder(label)
 
             #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
-            crop_random_image(image, box2, save_dir,  LABELS_right)
+            crop_random_image(image, box2, save_dir,  LABELS_right, left_right='right')
             print('{} : right section cropped'.format(LABELS_right))
         else:
             print('a 키를 눌러 박스를 제거하고 촬영')
@@ -316,8 +316,8 @@ while True:
                 make_folder(label)        
 
             #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
-            crop_random_image(image1, box1, save_dir,  LABELS_left)
-            crop_random_image(image2, box2, save_dir,  LABELS_right)
+            crop_random_image(image1, box1, save_dir,  LABELS_left, left_right='left')
+            crop_random_image(image2, box2, save_dir,  LABELS_right, left_right='right')
             print('{} // {} : left, right section cropped'.format(LABELS_left, LABELS_right))
         else:
             print('a 키를 눌러 박스를 제거하고 촬영')
