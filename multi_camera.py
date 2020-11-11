@@ -174,7 +174,7 @@ while True:
     # LABELS_left = get_labels('./label_left.txt')
     # LABELS_right = get_labels('./label_right.txt')
 
-    # 음료 및 상온 2221 구조에서 사용 --!
+    # 음료 및 상온 2221 구조에서 사용 --!!!
     LABELS_left = get_multi_labels('./label.txt')[0]
     LABELS_right = get_multi_labels('./label.txt')[1]
 
