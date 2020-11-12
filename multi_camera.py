@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
 '''
 coding by JW_Mudfish
-Version : 2.1 
-Last Updated 2020.11.03
+Version : 2.2 
+Last Updated 2020.11.12
 '''
 
 import pandas as pd
