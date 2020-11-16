@@ -147,7 +147,7 @@ frame0.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
 frame0.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 frame0.set(cv2.CAP_PROP_AUTOFOCUS, 0)
 
-frame1.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS)
+frame1.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS) 
 frame1.set(cv2.CAP_PROP_FOURCC, MJPG_CODEC)
 frame1.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
 frame1.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
