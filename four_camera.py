@@ -18,7 +18,7 @@ import random
 import pyzbar.pyzbar as pyzbar
 
 # sudo apt install v4l-utils
-###############################
+#################################
 BRIGHTNESS = 10
 save_dir = './saved_images'
 
