@@ -314,7 +314,7 @@ while True:
         if score < 0.91:
             #cv2.rectangle(f_image, (0,0), (w,h), (0,0,255), 6)   # 6은 두께
             #print('There is Object on 1~3 column')
-            print('경보발령 경보발령 !!!@@~~! 1~3 컬럼에 무엇인가가 있다!!!! 확인해봐 !!!!!!!!!!')
+            print('확인!!')
 
             
 
