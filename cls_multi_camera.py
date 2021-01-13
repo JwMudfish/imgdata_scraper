@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
 '''
 coding by JW_Mudfish
-Version : 2.3 
-Last Updated 2021.01.06
+Version : 2.4 
+Last Updated 2021.01.13
 
 주요기능
 - 카메라 두개로, 동시에 이미지 데이터 수집 가능
@@ -14,12 +14,13 @@ Last Updated 2021.01.06
 - classification 용 이미지 캡쳐(저장)시 간단한 augmentation 적용 ------> 더 추가해야 함
 - 사용가능한 카메라 번호 가져옴 -> 카메라 번호 맵핑 자동화 기능 추가예정
 - 실시간 밝기조절 가능
+- 박스 제거를 하지 않아도, 박스 없는 채로 이미지 캡쳐 가능
+- 실시간 카메라 스위치 기능 추가
+- 카메라 번호 자동 맵핑 (데스크탑 버전 / 노트북 버전 따로)
 
 
 To do list
-    [] 카메라 번호 자동 맵핑 (데스크탑 버전 / 노트북 버전 따로)
     [] augmentation 기능 추가
-    [] 실시간 카메라 스위치 기능 추가
 '''
 
 import pandas as pd
@@ -45,7 +46,9 @@ frame_height = int(1080)
 
 ################################
 
-MODE = 'b'   # b : box 모드
+MODE = 'box'   # b : box 모드
+LR_MODE = 'a'
+
 BOX_NUM_1 = '0'   # 
 BOX_NUM_2 = '0'
 
@@ -144,12 +147,13 @@ def nothing(x):
 
 #active_cam = list(map(lambda x : x[-1], getDevicesList()))
 active_cam = getDevicesList()
-
+if len(active_cam) >= 3:
+    active_cam.remove('0')
 
 print(f'현재 활성화 되어있는 카메라는 {active_cam} 입니다.')
 
-frame0 = cv2.VideoCapture(LEFT_CAMERA_NUM)
-frame1 = cv2.VideoCapture(RIGHT_CAMERA_NUM)
+frame0 = cv2.VideoCapture(int(active_cam[0]))
+frame1 = cv2.VideoCapture(int(active_cam[1]))
 
 
 MJPG_CODEC = 1196444237.0 # MJPG
@@ -179,8 +183,24 @@ while True:
     frame0.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS)
     frame1.set(cv2.CAP_PROP_BRIGHTNESS, BRIGHTNESS)
 
-    ret0, img0 = frame0.read()
-    ret1, img00 = frame1.read()
+    if LR_MODE == 'a':
+        ret0, img0 = frame0.read()
+        ret1, img00 = frame1.read()
+
+        ret0, cap_img1 = frame0.read()
+        ret1, cap_img2 = frame1.read()
+    
+    else:
+        ret0, img00 = frame0.read()
+        ret1, img0 = frame1.read()
+
+        ret0, cap_img2 = frame0.read()
+        ret1, cap_img1 = frame1.read()
+
+
+
+    # ret0, img0 = frame0.read()
+    # ret1, img00 = frame1.read()
     
     box1 = get_boxes('./boxes')['{}'.format(BOX_NUM_1)]
     box2 = get_boxes('./boxes')['{}'.format(BOX_NUM_2)]
@@ -199,7 +219,7 @@ while True:
     blank_image_1 = np.zeros((150, frame_width, 3), np.uint8)
     blank_image_2 = np.zeros((150, frame_width, 3), np.uint8)
 
-    if MODE =='b':
+    if MODE =='box':
         #textSize1 = textSize2 = -60
         
         for i in box1:
@@ -264,10 +284,17 @@ while True:
 
     # 박스 숨기기 / 나타내기
     elif ch == ord('a'):
-        if MODE == 'b':
+        if MODE == 'box':
             MODE = 'a'
         else:
-            MODE = 'b'
+            MODE = 'box'
+
+    # 박스 숨기기 / 나타내기
+    elif ch == ord('l'):
+        if LR_MODE == 'a':
+            LR_MODE = 'b'
+        else:
+            LR_MODE = 'a'
 
 
     # box 변경 ( '[' : - 변경,   ']' : + 변경)
@@ -296,48 +323,45 @@ while True:
             BOX_NUM_2 = str(len(os.listdir('./boxes'))-1)
 
     elif ch == ord('1'):
-        if MODE == 'a':
-            image = img1
-            
-            for label in LABELS_left:
-                make_folder(label)
+        #if MODE == 'a':
+        image = cap_img1
+        
+        for label in LABELS_left:
+            make_folder(label)
 
-            #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
-            crop_random_image(image, box1, save_dir,  LABELS_left, left_right='left')
-            print('{} : left section cropped'.format(LABELS_left))
-        else:
-            print('a 키를 눌러 박스를 제거하고 촬영')        
+        #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+        crop_random_image(image, box1, save_dir,  LABELS_left, left_right='left')
+        print('{} : left section cropped'.format(LABELS_left))
+        #else:
+        #    print('a 키를 눌러 박스를 제거하고 촬영')        
 
     elif ch == ord('2'):
-        if MODE == 'a':
-            image = img2
-            
-            for label in LABELS_right:
-                make_folder(label)
+        #if MODE == 'a':
+        image = cap_img2
+        
+        for label in LABELS_right:
+            make_folder(label)
 
-            #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
-            crop_random_image(image, box2, save_dir,  LABELS_right, left_right='right')
-            print('{} : right section cropped'.format(LABELS_right))
-        else:
-            print('a 키를 눌러 박스를 제거하고 촬영')
+        #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+        crop_random_image(image, box2, save_dir,  LABELS_right, left_right='right')
+        print('{} : right section cropped'.format(LABELS_right))
+        #else:
+        #    print('a 키를 눌러 박스를 제거하고 촬영')
 
 
     elif ch == ord('d'):
-        if MODE == 'a':
-            image1 = img1
-            image2 = img2
-            
-            for label in LABELS_right:
-                make_folder(label)
-            for label in LABELS_left:
-                make_folder(label)        
+        image1 = cap_img1
+        image2 = cap_img2
+        
+        for label in LABELS_right:
+            make_folder(label)
+        for label in LABELS_left:
+            make_folder(label)        
 
-            #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
-            crop_random_image(image1, box1, save_dir,  LABELS_left, left_right='left')
-            crop_random_image(image2, box2, save_dir,  LABELS_right, left_right='right')
-            print('{} // {} : left, right section cropped'.format(LABELS_left, LABELS_right))
-        else:
-            print('a 키를 눌러 박스를 제거하고 촬영')
+        #crop_image(image, box, save_dir,  LABELS, (RESIZE,RESIZE))
+        crop_random_image(image1, box1, save_dir,  LABELS_left, left_right='left')
+        crop_random_image(image2, box2, save_dir,  LABELS_right, left_right='right')
+        print('{} // {} : left, right section cropped'.format(LABELS_left, LABELS_right))
 
     # 트랙바로 대체
     # elif ch == ord('+'):
